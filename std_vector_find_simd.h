@@ -81,7 +81,7 @@ namespace fast_vector_find
         {
             while(compare + 32 < end)
             {
-                const __m256i compareSIMDValue = _mm256_set1_epi8(*(char*)(&value));
+                const __m256i compareSIMDValue = _mm256_set1_epi8(*(char*)(&value)); // maybe compiler will cache this variable.
                 const __m256i cmp = _mm256_cmpeq_epi8(*(__m256i*)compare, compareSIMDValue);
                 const int z = _mm256_movemask_epi8(cmp);
                 if (z)
