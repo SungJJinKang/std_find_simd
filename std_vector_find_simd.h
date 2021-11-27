@@ -26,14 +26,25 @@
 #define _FAST_VECTOR_FIND_IS_ALIGNED(POINTER, BYTE_COUNT) \
     (((uintptr_t)(const void *)(POINTER)) % (BYTE_COUNT) == 0)
 
+
+
+
 namespace fast_vector_find
 {
+    // TODO : remove #include <type_traits>, implement custom is_arithmetic<T>, is_pointer<T>
+
     template <typename T>
     struct is_find_simd_capable
     {
-        static _FAST_VECTOR_FIND_CONSTEXPR const bool value = (std::is_arithmetic<T>::value == true) || (std::is_pointer<T>::value == true);
+        static _FAST_VECTOR_FIND_CONSTEXPR const bool value = 
+            ((std::is_arithmetic<T>::value == true) || (std::is_pointer<T>::value == true)) &&
+            (sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8)
+    	;
     };
 
+    // RandomAccessIterator is not allowed as function parameter
+	// because msvc prohibit dereference value initialized iterator
+    
     // FUNCTION TEMPLATE find_if_not
     template <typename T, typename Allocator>
     extern typename std::vector<T, Allocator>::iterator find_simd(std::vector<T, Allocator>& vector, const T value)
