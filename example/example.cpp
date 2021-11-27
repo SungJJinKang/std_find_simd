@@ -47,6 +47,18 @@ int main()
 		}
 
 
+		for (long long i = 0; i < 2000; i++)
+		{
+			auto iter = fast_vector_find::find_simd(a, (long long)i);
+			assert(iter == a.begin() + i);
+		}
+
+		for (long long i = 10000000 - 500; i < 10000000; i++)
+		{
+			auto iter = fast_vector_find::find_simd(a, (long long)i);
+			assert(iter == a.begin() + i);
+		}
+
 	}
 
 	{
@@ -116,6 +128,17 @@ int main()
 			a.push_back(i);
 		}
 
+		for (short i = 20000 - 500; i < 20000; i++)
+		{
+			auto iter = fast_vector_find::find_simd(a, (short)i);
+			assert(iter == a.begin() + i);
+		}
+
+		for (short i = 0; i < 500; i++)
+		{
+			auto iter = fast_vector_find::find_simd(a, (short)i);
+			assert(iter == a.begin() + i);
+		}
 
 		{
 			auto iter = fast_vector_find::find_simd(a, (short)0);
