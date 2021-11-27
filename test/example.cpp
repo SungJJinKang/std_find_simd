@@ -1,6 +1,8 @@
 #include "../std_vector_find_simd.h"
 #include <cassert>
 #include <numeric>
+#include <vector>
+
 int main()
 {
 	{
@@ -351,6 +353,84 @@ int main()
 
 			auto iter = fast_vector_find::find_simd(a, (char)126);
 			assert(iter == a.begin() + 126);
+		}
+	}
+
+	{
+		std::vector<char> a;
+
+		a.reserve(51);
+		for (char i = 0; i <= 50; i++)
+		{
+			a.push_back(i);
+		}
+
+		for (char i = 0; i <= 50; i++)
+		{
+			auto iter = fast_vector_find::find_simd(a, (char)i);
+			assert(iter == a.begin() + i);
+		}
+	}
+
+	{
+		std::vector<short> a;
+
+		a.reserve(51);
+		for (char i = 0; i <= 50; i++)
+		{
+			a.push_back(i);
+		}
+
+		for (char i = 0; i <= 50; i++)
+		{
+			auto iter = fast_vector_find::find_simd(a, (short)i);
+			assert(iter == a.begin() + i);
+		}
+	}
+
+	{
+		std::vector<unsigned long> a;
+
+		a.reserve(51);
+		for (char i = 0; i <= 50; i++)
+		{
+			a.push_back(i);
+		}
+
+		for (char i = 0; i <= 50; i++)
+		{
+			auto iter = fast_vector_find::find_simd(a, (unsigned long)i);
+			assert(iter == a.begin() + i);
+		}
+	}
+
+	{
+		std::vector<unsigned long long> a;
+
+		a.reserve(51);
+		for (char i = 0; i <= 50; i++)
+		{
+			a.push_back(i);
+		}
+
+		for (char i = 0; i <= 50; i++)
+		{
+			auto iter = fast_vector_find::find_simd(a, (unsigned long long)i);
+			assert(iter == a.begin() + i);
+		}
+	}
+
+	{
+		std::vector<int*> a;
+		a.reserve(20000);
+		for (int i = 0; i <= 20000; i++)
+		{
+			a.push_back((int*)i);
+		}
+		for (int i = 0; i <= 20000; i++)
+		{
+			auto iter = fast_vector_find::find_simd(a, (int*)i);
+			assert(iter == a.begin() + i);
 		}
 	}
 }

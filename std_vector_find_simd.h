@@ -7,10 +7,9 @@
 #include <vector>
 #include <immintrin.h>
 #include <type_traits>
-#include <cassert>
 #include "builtin.h"
 
-#define is_aligned(POINTER, BYTE_COUNT) \
+#define _FAST_VECTOR_FIND_IS_ALIGNED(POINTER, BYTE_COUNT) \
     (((uintptr_t)(const void *)(POINTER)) % (BYTE_COUNT) == 0)
 
 namespace fast_vector_find
@@ -19,7 +18,7 @@ namespace fast_vector_find
     template <typename T, typename Allocator>
     extern typename std::vector<T, Allocator>::iterator find_simd(std::vector<T, Allocator>& vector, const T value)
 	{
-        static_assert(std::is_fundamental<T>::value == true, "unsupported type ( only fundamental type is supported )");
+        static_assert( (std::is_arithmetic<T>::value == true) || (std::is_pointer<T>::value == true), "unsupported type ( vector element should be arithmetic or pointer type )");
 
         using vector_value_type = typename std::vector<T, Allocator>::value_type;
 
@@ -28,7 +27,7 @@ namespace fast_vector_find
             (sizeof(vector_value_type) == 2) ||
             (sizeof(vector_value_type) == 4) ||
             (sizeof(vector_value_type) == 8),
-            "unsupported type ( type size should be 1 or 2 or 4 or 8 )"
+            "unsupported type ( vectore element's type size should be 1 or 2 or 4 or 8 )"
             );
 
         const vector_value_type* const begin = vector.data();
@@ -36,7 +35,7 @@ namespace fast_vector_find
         vector_value_type* compare = vector.data();
        
 
-        while( ( compare != end ) && is_aligned(compare, 32) == false)
+        while( ( compare != end ) && _FAST_VECTOR_FIND_IS_ALIGNED(compare, 32) == false)
         {// scalar compare until aligned to 32 byte ( AVX2, 256bit )
 	        if(*compare == value)
 	        {
@@ -52,7 +51,6 @@ namespace fast_vector_find
             while(compare + (32 / sizeof(vector_value_type)) < end)
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi8(*(char*)(&value));
-                assert((uintptr_t)compare % 32 == 0);
                 const __m256i cmp = _mm256_cmpeq_epi8(*(__m256i*)compare, compareSIMDValue);
                 const int z = _mm256_movemask_epi8(cmp);
                 if (z)
@@ -69,7 +67,6 @@ namespace fast_vector_find
             while (compare + (32 / sizeof(vector_value_type)) < end)
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi16(*(short*)(&value));
-                assert((uintptr_t)compare % 32 == 0);
                 const __m256i cmp = _mm256_cmpeq_epi16(*(__m256i*)compare, compareSIMDValue);
 
                 const __m256i IncludeSlotsShifted = _mm256_srli_epi16(cmp, 8);
@@ -88,7 +85,6 @@ namespace fast_vector_find
             while (compare + (32 / sizeof(vector_value_type)) < end)
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi32(*(int*)(&value));
-                assert((uintptr_t)compare % 32 == 0);
                 const __m256i cmp = _mm256_cmpeq_epi32(*(__m256i*)compare, compareSIMDValue);
                 const int z = _mm256_movemask_ps(*(__m256*)(&cmp));
                 if (z)
@@ -105,7 +101,6 @@ namespace fast_vector_find
             while (compare + (32 / sizeof(vector_value_type)) < end)
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi64x(*(long long*)(&value));
-                assert((uintptr_t)compare % 32 == 0);
                 const __m256i cmp = _mm256_cmpeq_epi64(*(__m256i*)compare, compareSIMDValue);
                 const int z = _mm256_movemask_pd(*(__m256d*)(&cmp));
                 if (z)
