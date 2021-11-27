@@ -14,11 +14,17 @@
 
 namespace fast_vector_find
 {
+    template <typename T>
+    struct is_find_simd_capable
+    {
+        static const bool value = (std::is_arithmetic<T>::value == true) || (std::is_pointer<T>::value == true);
+    };
+
     // FUNCTION TEMPLATE find_if_not
     template <typename T, typename Allocator>
     extern typename std::vector<T, Allocator>::iterator find_simd(std::vector<T, Allocator>& vector, const T value)
 	{
-        static_assert( (std::is_arithmetic<T>::value == true) || (std::is_pointer<T>::value == true), "unsupported type ( vector element should be arithmetic or pointer type )");
+        static_assert( is_find_simd_capable<T>::value == true, "unsupported type ( vector element should be arithmetic or pointer type )");
 
         using vector_value_type = typename std::vector<T, Allocator>::value_type;
 
@@ -48,7 +54,7 @@ namespace fast_vector_find
 
         if(sizeof(vector_value_type) == 1)
         {
-            while(compare + (32 / sizeof(vector_value_type)) < end)
+            while(compare + 32 < end)
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi8(*(char*)(&value));
                 const __m256i cmp = _mm256_cmpeq_epi8(*(__m256i*)compare, compareSIMDValue);
@@ -64,7 +70,7 @@ namespace fast_vector_find
         }
         else if(sizeof(vector_value_type) == 2)
         {
-            while (compare + (32 / sizeof(vector_value_type)) < end)
+            while (compare + 16 < end)
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi16(*(short*)(&value));
                 const __m256i cmp = _mm256_cmpeq_epi16(*(__m256i*)compare, compareSIMDValue);
@@ -82,7 +88,7 @@ namespace fast_vector_find
         }
         else if(sizeof(vector_value_type) == 4)
         {
-            while (compare + (32 / sizeof(vector_value_type)) < end)
+            while (compare + 8 < end)
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi32(*(int*)(&value));
                 const __m256i cmp = _mm256_cmpeq_epi32(*(__m256i*)compare, compareSIMDValue);
@@ -98,7 +104,7 @@ namespace fast_vector_find
         }
         else if(sizeof(vector_value_type) == 8)
         {
-            while (compare + (32 / sizeof(vector_value_type)) < end)
+            while (compare + 2 < end)
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi64x(*(long long*)(&value));
                 const __m256i cmp = _mm256_cmpeq_epi64(*(__m256i*)compare, compareSIMDValue);

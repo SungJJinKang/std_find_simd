@@ -3,8 +3,10 @@
 #include <numeric>
 #include <vector>
 
+
 int main()
 {
+
 	{
 		std::vector<char> a;
 		
@@ -433,4 +435,6 @@ int main()
 			assert(iter == a.begin() + i);
 		}
 	}
+
+
 }
