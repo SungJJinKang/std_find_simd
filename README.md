@@ -1,6 +1,8 @@
 # std::vector.find simd version
 std::vector.find simd version
 
+std::find doesn't use simd intrinsics.      
+So i thought simd can make std::find faster.       
 You don't need worry about alignment problem. ( we handle it )          
 
 ## Requirement
