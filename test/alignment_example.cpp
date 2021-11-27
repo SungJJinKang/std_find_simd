@@ -79,7 +79,7 @@ public:
 int main()
 {
     {
-        std::vector<long long, AlignmentAllocator<int, 4>> a;
+        std::vector<long long, AlignmentAllocator<long long, 4>> a;
         a.reserve(10000001);
         for (unsigned long long i = 0; i <= 10000000; i++)
         {

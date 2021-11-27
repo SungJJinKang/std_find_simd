@@ -1,9 +1,13 @@
 # std::vector.find simd version
-std::vector.find simd version
 
-std::find doesn't use simd intrinsics.      
-So i thought simd can make std::find faster.       
-You don't need worry about alignment problem. ( we handle it )          
+std::find doesn't use simd intrinsics. ( check [https://gms.tf/stdfind-and-memchr-optimizations.html](https://gms.tf/stdfind-and-memchr-optimizations.html) )             
+
+So i thought simd can make std::find faster for some types.       
+
+## Feature
+
+- use avx2 intrinsic
+- You don't need worry about alignment problem. ( we handle it )          
 
 ## Requirement
 
@@ -25,6 +29,10 @@ for (short i = 0; i < 1000; i++)
   fast_vector_find::find_simd(a, (short)i);
 }
 ```
+
+## To develop
+
+- implement partial template specialization of std::find ( Is this possible? )
 
 ## Benchmark 
 

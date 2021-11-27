@@ -9,6 +9,20 @@
 #include <type_traits>
 #include "builtin.h"
 
+
+#if defined(__GNUC__)  || defined( __clang__)
+#  define _FAST_VECTOR_FIND_CURRENT_CPP_VERSION __cplusplus
+#elif defined(_MSC_VER)
+#  define _FAST_VECTOR_FIND_CURRENT_CPP_VERSION _MSVC_LANG 
+#endif
+
+#if (_FAST_VECTOR_FIND_CURRENT_CPP_VERSION == 201703L) || (_FAST_VECTOR_FIND_CURRENT_CPP_VERSION == 202002L)
+#define _FAST_VECTOR_FIND_CONSTEXPR constexpr
+#else
+#define _FAST_VECTOR_FIND_CONSTEXPR
+#endif
+
+
 #define _FAST_VECTOR_FIND_IS_ALIGNED(POINTER, BYTE_COUNT) \
     (((uintptr_t)(const void *)(POINTER)) % (BYTE_COUNT) == 0)
 
@@ -17,7 +31,7 @@ namespace fast_vector_find
     template <typename T>
     struct is_find_simd_capable
     {
-        static const bool value = (std::is_arithmetic<T>::value == true) || (std::is_pointer<T>::value == true);
+        static _FAST_VECTOR_FIND_CONSTEXPR const bool value = (std::is_arithmetic<T>::value == true) || (std::is_pointer<T>::value == true);
     };
 
     // FUNCTION TEMPLATE find_if_not
@@ -52,7 +66,7 @@ namespace fast_vector_find
 
         // now address of compare is aligned to 32 byte
 
-        if(sizeof(vector_value_type) == 1)
+        if _FAST_VECTOR_FIND_CONSTEXPR (sizeof(vector_value_type) == 1)
         {
             while(compare + 32 < end)
             {
@@ -68,7 +82,7 @@ namespace fast_vector_find
                 compare += 32;
             }
         }
-        else if(sizeof(vector_value_type) == 2)
+        else if _FAST_VECTOR_FIND_CONSTEXPR (sizeof(vector_value_type) == 2)
         {
             while (compare + 16 < end)
             {
@@ -86,7 +100,7 @@ namespace fast_vector_find
                 compare += 16;
             }
         }
-        else if(sizeof(vector_value_type) == 4)
+        else if _FAST_VECTOR_FIND_CONSTEXPR (sizeof(vector_value_type) == 4)
         {
             while (compare + 8 < end)
             {
@@ -102,7 +116,7 @@ namespace fast_vector_find
                 compare += 8;
             }
         }
-        else if(sizeof(vector_value_type) == 8)
+        else if _FAST_VECTOR_FIND_CONSTEXPR (sizeof(vector_value_type) == 8)
         {
             while (compare + 2 < end)
             {
