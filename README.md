@@ -9,6 +9,7 @@ You don't need worry about alignment problem. ( we handle it )
 
 - std::vector's value type must be arithmetic type or pointer type
 - require avx2 option
+- require c++ 11
 
 ## Usage
 ```
