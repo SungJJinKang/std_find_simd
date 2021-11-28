@@ -35,5 +35,5 @@ for (short i = 0; i < 1000; i++)
 - implement partial template specialization of std::find ( Is this possible? )
 
 ## Benchmark 
-
+tested on msvc, x64, windows               
 ![20211128031529](https://user-images.githubusercontent.com/33873804/143701373-1c8aafbe-6131-4538-9d60-5432b84cd87c.png)
