@@ -11,19 +11,19 @@
 
 
 #if defined(__GNUC__)  || defined( __clang__)
-#  define _FAST_VECTOR_FIND_CURRENT_CPP_VERSION __cplusplus
+#  define FAST_VECTOR_FIND_CURRENT_CPP_VERSION __cplusplus
 #elif defined(_MSC_VER)
-#  define _FAST_VECTOR_FIND_CURRENT_CPP_VERSION _MSVC_LANG 
+#  define FAST_VECTOR_FIND_CURRENT_CPP_VERSION _MSVC_LANG 
 #endif
 
-#if (_FAST_VECTOR_FIND_CURRENT_CPP_VERSION == 201703L) || (_FAST_VECTOR_FIND_CURRENT_CPP_VERSION == 202002L)
-#define _FAST_VECTOR_FIND_CONSTEXPR constexpr
+#if (FAST_VECTOR_FIND_CURRENT_CPP_VERSION == 201703L) || (FAST_VECTOR_FIND_CURRENT_CPP_VERSION == 202002L)
+#define FAST_VECTOR_FIND_CONSTEXPR constexpr
 #else
-#define _FAST_VECTOR_FIND_CONSTEXPR
+#define FAST_VECTOR_FIND_CONSTEXPR
 #endif
 
 
-#define _FAST_VECTOR_FIND_IS_ALIGNED(POINTER, BYTE_COUNT) \
+#define FAST_VECTOR_FIND_IS_ALIGNED(POINTER, BYTE_COUNT) \
     (((uintptr_t)(const void *)(POINTER)) % (BYTE_COUNT) == 0)
 
 
@@ -36,7 +36,7 @@ namespace fast_vector_find
     template <typename T>
     struct is_find_simd_capable
     {
-        static _FAST_VECTOR_FIND_CONSTEXPR const bool value = 
+        static FAST_VECTOR_FIND_CONSTEXPR const bool value = 
             ((std::is_arithmetic<T>::value == true) || (std::is_pointer<T>::value == true)) &&
             (sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8)
     	;
@@ -66,7 +66,7 @@ namespace fast_vector_find
         vector_value_type* compare = vector.data();
        
 
-        while( ( compare != end ) && _FAST_VECTOR_FIND_IS_ALIGNED(compare, 32) == false)
+        while( ( compare != end ) && FAST_VECTOR_FIND_IS_ALIGNED(compare, 32) == false)
         {// scalar compare until aligned to 32 byte ( AVX2, 256bit )
 	        if(*compare == value)
 	        {
@@ -77,9 +77,9 @@ namespace fast_vector_find
 
         // now address of compare is aligned to 32 byte
 
-        if _FAST_VECTOR_FIND_CONSTEXPR (sizeof(vector_value_type) == 1)
+        if FAST_VECTOR_FIND_CONSTEXPR (sizeof(vector_value_type) == 1)
         {
-            while(compare + 32 < end)
+            while(compare + 32 <= end)
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi8(*(char*)(&value)); // maybe compiler will cache this variable.
                 const __m256i cmp = _mm256_cmpeq_epi8(*(__m256i*)compare, compareSIMDValue);
@@ -93,9 +93,9 @@ namespace fast_vector_find
                 compare += 32;
             }
         }
-        else if _FAST_VECTOR_FIND_CONSTEXPR (sizeof(vector_value_type) == 2)
+        else if FAST_VECTOR_FIND_CONSTEXPR (sizeof(vector_value_type) == 2)
         {
-            while (compare + 16 < end)
+            while (compare + 16 <= end)
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi16(*(short*)(&value));
                 const __m256i cmp = _mm256_cmpeq_epi16(*(__m256i*)compare, compareSIMDValue);
@@ -111,9 +111,9 @@ namespace fast_vector_find
                 compare += 16;
             }
         }
-        else if _FAST_VECTOR_FIND_CONSTEXPR (sizeof(vector_value_type) == 4)
+        else if FAST_VECTOR_FIND_CONSTEXPR (sizeof(vector_value_type) == 4)
         {
-            while (compare + 8 < end)
+            while (compare + 8 <= end)
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi32(*(int*)(&value));
                 const __m256i cmp = _mm256_cmpeq_epi32(*(__m256i*)compare, compareSIMDValue);
@@ -127,9 +127,9 @@ namespace fast_vector_find
                 compare += 8;
             }
         }
-        else if _FAST_VECTOR_FIND_CONSTEXPR (sizeof(vector_value_type) == 8)
+        else if FAST_VECTOR_FIND_CONSTEXPR (sizeof(vector_value_type) == 8)
         {
-            while (compare + 2 < end)
+            while (compare + 2 <= end)
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi64x(*(long long*)(&value));
                 const __m256i cmp = _mm256_cmpeq_epi64(*(__m256i*)compare, compareSIMDValue);
