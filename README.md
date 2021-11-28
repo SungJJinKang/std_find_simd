@@ -33,6 +33,7 @@ for (short i = 0; i < 1000; i++)
 ## To develop
 
 - implement partial template specialization of std::find ( Is this possible? )
+- support for avx512 intrinsic ( ex) _mm256_cmpeq_epi8_mask )
 
 ## Benchmark 
 tested on msvc, x64, windows               
