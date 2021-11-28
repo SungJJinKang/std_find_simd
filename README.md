@@ -7,7 +7,7 @@ So i thought simd can make std::find faster for some types.
 ## Feature
 
 - use avx2 intrinsic
-- You don't need worry about alignment problem. ( we handle it )          
+- You don't need worry about alignment problem. ( this library handle it )          
 
 ## Requirement
 
@@ -32,8 +32,9 @@ for (short i = 0; i < 1000; i++)
 
 ## To develop
 
-- implement partial template specialization of std::find ( Is this possible? )
-- support for avx512 intrinsic ( ex) _mm256_cmpeq_epi8_mask )
+- implement partial template specialization of std::find ( Is this possible? )        
+- support for avx512 intrinsic ( ex) _mm256_cmpeq_epi8_mask )         
+- more optimization ( [https://www.reddit.com/r/simd/comments/r3upl8/comment/hmd5uw9/?utm_source=share&utm_medium=web2x&context=3](https://www.reddit.com/r/simd/comments/r3upl8/comment/hmd5uw9/?utm_source=share&utm_medium=web2x&context=3) )           
 
 ## Benchmark 
 tested on msvc, x64, windows               
