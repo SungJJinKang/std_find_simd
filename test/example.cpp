@@ -35,6 +35,11 @@ int main()
 			a[i] = (short)i;
 		}
 
+		for (short i = 0; i < 1000; i += 1)
+		{
+			short* const address = fast_find_simd::find_simd_raw(a, a + 1000, (short)i);
+			assert(address == a + i);
+		}
 
 		for (short i = 0; i < 1000; i += 2)
 		{
@@ -84,6 +89,18 @@ int main()
 
 
 		for (char i = 0; i < 126; i++)
+		{
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (char)i);
+			assert(iter == a.begin() + i);
+		}
+
+		for (char i = 0; i < 124; i += 3)
+		{
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (char)i);
+			assert(iter == a.begin() + i);
+		}
+
+		for (char i = 0; i < 124; i+=2)
 		{
 			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (char)i);
 			assert(iter == a.begin() + i);
