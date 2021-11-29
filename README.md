@@ -1,4 +1,4 @@
-# std::vector.find simd version
+# std::find simd version
 
 std::find doesn't use simd intrinsics. ( check [https://gms.tf/stdfind-and-memchr-optimizations.html](https://gms.tf/stdfind-and-memchr-optimizations.html) )             
 
@@ -6,12 +6,12 @@ So i thought simd can make std::find faster for some types.
 
 ## Feature
 
-- use avx2 intrinsic
+- avx2 intrinsic is used
 - You don't need worry about alignment problem. ( this library handle it )          
 
 ## Requirement
 
-- iterator's value type must be arithmetic type or pointer type
+- iterator's value type should be scalar type
 - iterator should be random access iterator
 - require avx2 option
 - require c++ 11
