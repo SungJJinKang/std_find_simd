@@ -1,11 +1,30 @@
-#include "../std_vector_find_simd.h"
+#include "../fast_find_simd.h"
 #include <cassert>
 #include <numeric>
 #include <vector>
-
+#include <array>
 
 int main()
 {
+
+	static_assert(fast_find_simd::is_iteratype_type_find_simd_capable<std::vector<char>::iterator>::value == true, "fail is_iteratype_type_find_simd_capable");
+	static_assert(fast_find_simd::is_iteratype_type_find_simd_capable<std::vector<int>::iterator>::value == true, "fail is_iteratype_type_find_simd_capable");
+
+	{
+		std::array<char, 126> a;
+		
+		for (char i = 0; i < 126; i++)
+		{
+			a[i] = (char)i;
+		}
+
+
+		for (char i = 0; i < 126; i++)
+		{
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (char)i);
+			assert(iter == a.begin() + i);
+		}
+	}
 
 	{
 		std::vector<char> a;
@@ -19,7 +38,7 @@ int main()
 
 		for(char i = 0 ; i <= 126 ; i++)
 		{
-			auto iter = fast_vector_find::find_simd(a, (char)i);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (char)i);
 			assert(iter == a.begin() + i);
 		}
 	}
@@ -34,32 +53,32 @@ int main()
 
 
 		{
-			auto iter = fast_vector_find::find_simd(a, (long long)0);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (long long)0);
 			assert(iter == a.begin() + 0);
 		}
 
 		{
-			auto iter = fast_vector_find::find_simd(a, (long long)1);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (long long)1);
 			assert(iter == a.begin() + 1);
 		}
 
 
 		for(long long i = 500000 ; i < 500050 ; i++)
 		{
-			auto iter = fast_vector_find::find_simd(a, (long long)i);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (long long)i);
 			assert(iter == a.begin() + i);
 		}
 
 
 		for (long long i = 0; i < 2000; i++)
 		{
-			auto iter = fast_vector_find::find_simd(a, (long long)i);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (long long)i);
 			assert(iter == a.begin() + i);
 		}
 
 		for (long long i = 10000000 - 500; i < 10000000; i++)
 		{
-			auto iter = fast_vector_find::find_simd(a, (long long)i);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (long long)i);
 			assert(iter == a.begin() + i);
 		}
 
@@ -75,44 +94,44 @@ int main()
 
 
 		{
-			auto iter = fast_vector_find::find_simd(a, (unsigned long long)0);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (unsigned long long)0);
 			assert(iter == a.begin() + 0);
 		}
 
 		{
-			auto iter = fast_vector_find::find_simd(a, (unsigned long long)1);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (unsigned long long)1);
 			assert(iter == a.begin() + 1);
 		}
 
 
 		{
 
-			auto iter = fast_vector_find::find_simd(a, (unsigned long long)500001);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (unsigned long long)500001);
 			assert(iter == a.begin() + 500001);
 		}
 
 
 		{
 
-			auto iter = fast_vector_find::find_simd(a, (unsigned long long)500002);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (unsigned long long)500002);
 			assert(iter == a.begin() + 500002);
 		}
 
 		{
 
-			auto iter = fast_vector_find::find_simd(a, (unsigned long long)500003);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (unsigned long long)500003);
 			assert(iter == a.begin() + 500003);
 		}
 
 		{
 
-			auto iter = fast_vector_find::find_simd(a, (unsigned long long)10000000);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (unsigned long long)10000000);
 			assert(iter == a.begin() + 10000000);
 		}
 
 		{
 
-			auto iter = fast_vector_find::find_simd(a, (unsigned long long)10000001000);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (unsigned long long)10000001000);
 			assert(iter == a.end());
 		}
 	}
@@ -126,7 +145,7 @@ int main()
 
 	{
 		std::vector<short> a;
-		a.reserve(20000);
+		a.reserve(20001);
 		for (short i = 0; i <= 20000; i++)
 		{
 			a.push_back(i);
@@ -134,102 +153,102 @@ int main()
 
 		for (short i = 20000 - 500; i < 20000; i++)
 		{
-			auto iter = fast_vector_find::find_simd(a, (short)i);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (short)i);
 			assert(iter == a.begin() + i);
 		}
 
 		for (short i = 0; i < 500; i++)
 		{
-			auto iter = fast_vector_find::find_simd(a, (short)i);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (short)i);
 			assert(iter == a.begin() + i);
 		}
 
 		{
-			auto iter = fast_vector_find::find_simd(a, (short)0);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (short)0);
 			assert(iter == a.begin() + 0);
 		}
 
 		{
-			auto iter = fast_vector_find::find_simd(a, (short)1);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (short)1);
 			assert(iter == a.begin() + 1);
 		}
 
 
 		{
 
-			auto iter = fast_vector_find::find_simd(a, (short)9999);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (short)9999);
 			assert(iter == a.begin() + 9999);
 		}
 
 
 		{
-			auto iter = fast_vector_find::find_simd(a, (short)9000);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (short)9000);
 			assert(iter == a.begin() + 9000);
 		}
 
 		{
-			auto iter = fast_vector_find::find_simd(a, (short)9001);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (short)9001);
 			assert(iter == a.begin() + 9001);
 		}
 
 		{
-			auto iter = fast_vector_find::find_simd(a, (short)9002);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (short)9002);
 			assert(iter == a.begin() + 9002);
 		}
 
 		{
-			auto iter = fast_vector_find::find_simd(a, (short)9003);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (short)9003);
 			assert(iter == a.begin() + 9003);
 		}
 
 		{
-			auto iter = fast_vector_find::find_simd(a, (short)9004);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (short)9004);
 			assert(iter == a.begin() + 9004);
 		}
 
 		{
-			auto iter = fast_vector_find::find_simd(a, (short)9005);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (short)9005);
 			assert(iter == a.begin() + 9005);
 		}
 
 		{
-			auto iter = fast_vector_find::find_simd(a, (short)9006);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (short)9006);
 			assert(iter == a.begin() + 9006);
 		}
 
 		{
-			auto iter = fast_vector_find::find_simd(a, (short)9007);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (short)9007);
 			assert(iter == a.begin() + 9007);
 		}
 
 		for(short i = 9008 ; i < 10100 ; i++)
 		{
-			auto iter = fast_vector_find::find_simd(a, (short)i);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (short)i);
 			assert(iter == a.begin() + i);
 		}
 
 		{
 
-			auto iter = fast_vector_find::find_simd(a, (short)5000);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (short)5000);
 			assert(iter == a.begin() + 5000);
 		}
 
 		{
 
-			auto iter = fast_vector_find::find_simd(a, (short)2);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (short)2);
 			assert(iter == a.begin() + 2);
 		}
 
 		{
 
-			auto iter = fast_vector_find::find_simd(a, std::numeric_limits<short>::max());
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), std::numeric_limits<short>::max());
 			assert(iter == a.end());
 		}
 	}
 
 	{
 		std::vector<int> a;
-		a.reserve(1000000);
+		a.reserve(1000001);
 		for (int i = 0; i <= 1000000; i++)
 		{
 			a.push_back(i);
@@ -237,48 +256,48 @@ int main()
 
 
 		{
-			auto iter = fast_vector_find::find_simd(a, (int)0);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (int)0);
 			assert(iter == a.begin() + 0);
 		}
 
 		{
-			auto iter = fast_vector_find::find_simd(a, (int)1);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (int)1);
 			assert(iter == a.begin() + 1);
 		}
 
 		{
 
-			auto iter = fast_vector_find::find_simd(a, (int)10000);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (int)10000);
 			assert(iter == a.begin() + 10000);
 		}
 
 		{
 
-			auto iter = fast_vector_find::find_simd(a, (int)10001);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (int)10001);
 			assert(iter == a.begin() + 10001);
 		}
 
 		{
 
-			auto iter = fast_vector_find::find_simd(a, (int)10002);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (int)10002);
 			assert(iter == a.begin() + 10002);
 		}
 
 		{
 
-			auto iter = fast_vector_find::find_simd(a, (int)10003);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (int)10003);
 			assert(iter == a.begin() + 10003);
 		}
 	
 
 		for (int i = 0; i < 100; i++)
 		{
-			auto iter = fast_vector_find::find_simd(a, (int)i);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (int)i);
 			assert(iter == a.begin() + i);
 		}
 		for(int i = 9000 ; i < 9100 ; i++)
 		{
-			auto iter = fast_vector_find::find_simd(a, (int)i);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (int)i);
 			assert(iter == a.begin() + i);
 		}
 
@@ -286,25 +305,25 @@ int main()
 
 		{
 
-			auto iter = fast_vector_find::find_simd(a, (int)9000);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (int)9000);
 			assert(iter == a.begin() + 9000);
 		}
 
 		{
 
-			auto iter = fast_vector_find::find_simd(a, (int)5000);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (int)5000);
 			assert(iter == a.begin() + 5000);
 		}
 
 		{
 
-			auto iter = fast_vector_find::find_simd(a, (int)2);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (int)2);
 			assert(iter == a.begin() + 2);
 		}
 
 		{
 
-			auto iter = fast_vector_find::find_simd(a, std::numeric_limits<int>::max());
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), std::numeric_limits<int>::max());
 			assert(iter == a.end());
 		}
 	}
@@ -321,39 +340,39 @@ int main()
 
 
 		{
-			auto iter = fast_vector_find::find_simd(a, (char)0);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (char)0);
 			assert(iter == a.begin() + 0);
 		}
 
 		{
-			auto iter = fast_vector_find::find_simd(a, (char)1);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (char)1);
 			assert(iter == a.begin() + 1);
 		}
 
 
 		{
 
-			auto iter = fast_vector_find::find_simd(a, (char)29);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (char)29);
 			assert(iter == a.begin() + 29);
 		}
 
 
 		{
 
-			auto iter = fast_vector_find::find_simd(a, (char)2);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (char)2);
 			assert(iter == a.begin() + 2);
 		}
 
 	
 		{
 
-			auto iter = fast_vector_find::find_simd(a, (char)30);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (char)30);
 			assert(iter == a.begin() + 30);
 		}
 
 		{
 
-			auto iter = fast_vector_find::find_simd(a, (char)126);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (char)126);
 			assert(iter == a.begin() + 126);
 		}
 	}
@@ -367,9 +386,9 @@ int main()
 			a.push_back(i);
 		}
 
-		for (char i = 0; i <= 50; i++)
+		for (char i = 0; i <= 30; i++)
 		{
-			auto iter = fast_vector_find::find_simd(a, (char)i);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.begin() + 30, (char)i);
 			assert(iter == a.begin() + i);
 		}
 	}
@@ -385,7 +404,7 @@ int main()
 
 		for (char i = 0; i <= 50; i++)
 		{
-			auto iter = fast_vector_find::find_simd(a, (short)i);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (short)i);
 			assert(iter == a.begin() + i);
 		}
 	}
@@ -401,7 +420,7 @@ int main()
 
 		for (char i = 0; i <= 50; i++)
 		{
-			auto iter = fast_vector_find::find_simd(a, (unsigned long)i);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (unsigned long)i);
 			assert(iter == a.begin() + i);
 		}
 	}
@@ -417,21 +436,21 @@ int main()
 
 		for (char i = 0; i <= 50; i++)
 		{
-			auto iter = fast_vector_find::find_simd(a, (unsigned long long)i);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (unsigned long long)i);
 			assert(iter == a.begin() + i);
 		}
 	}
 
 	{
 		std::vector<int*> a;
-		a.reserve(20000);
+		a.reserve(20001);
 		for (int i = 0; i <= 20000; i++)
 		{
 			a.push_back((int*)i);
 		}
 		for (int i = 0; i <= 20000; i++)
 		{
-			auto iter = fast_vector_find::find_simd(a, (int*)i);
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (int*)i);
 			assert(iter == a.begin() + i);
 		}
 	}

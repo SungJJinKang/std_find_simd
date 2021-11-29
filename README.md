@@ -11,7 +11,8 @@ So i thought simd can make std::find faster for some types.
 
 ## Requirement
 
-- std::vector's value type must be arithmetic type or pointer type
+- iterator's value type must be arithmetic type or pointer type
+- iterator should be random access iterator
 - require avx2 option
 - require c++ 11
 
@@ -26,7 +27,7 @@ for (unsigned short i = 0; i <= 1000; i++)
 
 for (short i = 0; i < 1000; i++)
 {
-  fast_vector_find::find_simd(a, (short)i);
+  fast_find_simd::find_simd(a.begin(), a.end(), (short)i);
 }
 ```
 
