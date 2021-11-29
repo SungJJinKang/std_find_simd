@@ -1,3 +1,5 @@
+#pragma once
+
 #if ( !defined(__AVX2__) && ( !defined(__AVX512BW__) || !defined(__AVX512VL__) ) )
 
 #error "Please enable AVX2 or ( __AVX512BW__ and __AVX512VL__ )option"
@@ -63,7 +65,7 @@ namespace fast_find_simd
     
 
     template <typename LEGACY_RANDOM_ITERATOR>
-    extern typename LEGACY_RANDOM_ITERATOR find_simd(LEGACY_RANDOM_ITERATOR beginIter, LEGACY_RANDOM_ITERATOR endIter, const typename std::iterator_traits<LEGACY_RANDOM_ITERATOR>::value_type value)
+    extern LEGACY_RANDOM_ITERATOR find_simd(LEGACY_RANDOM_ITERATOR beginIter, LEGACY_RANDOM_ITERATOR endIter, const typename std::iterator_traits<LEGACY_RANDOM_ITERATOR>::value_type value)
     {
         static_assert(details::is_iterator<LEGACY_RANDOM_ITERATOR>::value == true, "Please pass iterator type");
 
