@@ -10,6 +10,7 @@
 
 #include <benchmark/benchmark.h>
 #include <algorithm>
+#include <unordered_set>
 
 #include "../fast_find_simd.h"
 
@@ -188,3 +189,46 @@ static void Simd_find_1byte(benchmark::State& state)
 
 }
 BENCHMARK(Simd_find_1byte);
+
+
+
+/////////////////////
+
+static void Scalar_unordered_set_find_8byte(benchmark::State& state)
+{
+	std::unordered_set<long long> a;
+	a.reserve(1001);
+	for (unsigned long long i = 0; i <= 1000; i++)
+	{
+		a.emplace(i);
+	}
+	for (auto _ : state)
+	{
+		for (long long i = 0; i < 1000; i += 10)
+		{
+			benchmark::DoNotOptimize(std::find(a.begin(), a.end(), (long long)i));
+		}
+	}
+}
+// Register the function as a benchmark
+BENCHMARK(Scalar_unordered_set_find_8byte);
+
+// Define another benchmark
+static void Simd_vector_find_8byte(benchmark::State& state)
+{
+	std::vector<long long> a;
+	a.reserve(1001);
+	for (unsigned long long i = 0; i <= 1000; i++)
+	{
+		a.push_back(i);
+	}
+	for (auto _ : state)
+	{
+		for (long long i = 0; i < 1000; i += 10)
+		{
+			benchmark::DoNotOptimize(fast_find_simd::find_simd(a.begin(), a.end(), (long long)i));
+		}
+	}
+
+}
+BENCHMARK(Simd_vector_find_8byte);
