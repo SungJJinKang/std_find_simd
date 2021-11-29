@@ -39,6 +39,7 @@ tested on release mode, msvc, x64, windows
 
 ## To develop
 
+- add find_last_of_simd
 - implement partial template specialization of std::find ( Is this possible? )        
 - support for avx512 intrinsic ( ex) _mm256_cmpeq_epi8_mask ) ( not tested. https://github.com/SungJJinKang/std_find_simd/tree/avx512_version )         
 - more optimization ( [https://www.reddit.com/r/simd/comments/r3upl8/comment/hmd5uw9/?utm_source=share&utm_medium=web2x&context=3](https://www.reddit.com/r/simd/comments/r3upl8/comment/hmd5uw9/?utm_source=share&utm_medium=web2x&context=3) )           

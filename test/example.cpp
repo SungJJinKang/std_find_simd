@@ -10,6 +10,104 @@ int main()
 	static_assert(fast_find_simd::is_iteratype_type_find_simd_capable<std::vector<char>::iterator>::value == true, "fail is_iteratype_type_find_simd_capable");
 	static_assert(fast_find_simd::is_iteratype_type_find_simd_capable<std::vector<int>::iterator>::value == true, "fail is_iteratype_type_find_simd_capable");
 
+
+
+	{
+		char a[126];
+
+		for (char i = 0; i < 125; i++)
+		{
+			a[i] = (char)i;
+		}
+
+
+		char* const address = fast_find_simd::find_simd_raw(a, a + 126, (char)126);
+		assert(address == a + 126);
+	}
+
+	{
+		short a[1000];
+
+		for (short i = 0; i < 1000; i++)
+		{
+			a[i] = (short)i;
+		}
+
+		short* const address = fast_find_simd::find_simd_raw(a, a + 1000, (short)1001);
+		assert(address == a + 1000);
+	}
+
+
+
+	{
+		char a[126];
+
+		for (char i = 0; i < 125; i++)
+		{
+			a[i] = (char)2;
+		}
+		a[125] = 10;
+
+		char* const address = fast_find_simd::find_simd_raw(a, a + 126, (char)10);
+		assert(*address == 10);
+		assert(address == a + 125);
+	}
+	{
+		short a[1001];
+
+		for (short i = 0; i < 1000; i++)
+		{
+			a[i] = (short)2;
+		}
+		a[1000] = 10;
+
+		short* const address = fast_find_simd::find_simd_raw(a, a + 1000, (short)10);
+		assert(*address == 10);
+		assert(address == a + 1000);
+	}
+
+
+
+	{
+		char a[126];
+
+		for (char i = 0; i < 126; i++)
+		{
+			a[i] = (char)2;
+		}
+
+
+		char* const address = fast_find_simd::find_simd_raw(a, a + 126, (char)2);
+		assert(*address == 2);
+		assert(address == a);
+	}
+
+	{
+		short a[1000];
+
+		for (short i = 0; i < 1000; i++)
+		{
+			a[i] = (short)2;
+		}
+		
+		short* const address = fast_find_simd::find_simd_raw(a, a + 1000, (short)2);
+		assert(*address == 2);
+		assert(address == a);
+	}
+	{
+		unsigned int a[1000];
+
+		for (unsigned int i = 0; i < 1000; i++)
+		{
+			a[i] = (unsigned int)2;
+		}
+
+
+		unsigned int* const address = fast_find_simd::find_simd_raw(a, a + 1000, (unsigned int)2);
+		assert(*address == 2);
+		assert(address == a);
+	}
+
 	
 	{
 		char a[126];
@@ -35,10 +133,12 @@ int main()
 			a[i] = (short)i;
 		}
 
-		for (short i = 0; i < 1000; i += 1)
+		for (short i = 1; i < 999; i += 1)
 		{
 			short* const address = fast_find_simd::find_simd_raw(a, a + 1000, (short)i);
 			assert(address == a + i);
+			assert(address != a + i - 1);
+			assert(address != a + i + 1);
 		}
 
 		for (short i = 0; i < 1000; i += 2)
@@ -56,10 +156,12 @@ int main()
 		}
 
 
-		for (unsigned int i = 0; i < 126; i += 2)
+		for (unsigned int i = 1; i < 126; i += 2)
 		{
 			unsigned int* const address = fast_find_simd::find_simd_raw(a, a + 1000, (unsigned int)i);
 			assert(address == a + i);
+			assert(address != a + i - 1);
+			assert(address != a + i + 1);
 		}
 	}
 
