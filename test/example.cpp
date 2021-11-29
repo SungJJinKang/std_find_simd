@@ -10,6 +10,70 @@ int main()
 	static_assert(fast_find_simd::is_iteratype_type_find_simd_capable<std::vector<char>::iterator>::value == true, "fail is_iteratype_type_find_simd_capable");
 	static_assert(fast_find_simd::is_iteratype_type_find_simd_capable<std::vector<int>::iterator>::value == true, "fail is_iteratype_type_find_simd_capable");
 
+	
+	{
+		char a[126];
+
+		for (char i = 0; i < 126; i++)
+		{
+			a[i] = (char)i;
+		}
+
+
+		for (char i = 0; i < 126; i += 2)
+		{
+			char* const address = fast_find_simd::find_simd_raw(a, a + 126, (char)i);
+			assert(address == a + i);
+		}
+	}
+
+	{
+		short a[1000];
+
+		for (short i = 0; i < 1000; i++)
+		{
+			a[i] = (short)i;
+		}
+
+
+		for (short i = 0; i < 1000; i += 2)
+		{
+			short* const address = fast_find_simd::find_simd_raw(a, a + 1000, (short)i);
+			assert(address == a + i);
+		}
+	}
+	{
+		unsigned int a[1000];
+
+		for (unsigned int i = 0; i < 1000; i++)
+		{
+			a[i] = (unsigned int)i;
+		}
+
+
+		for (unsigned int i = 0; i < 126; i += 2)
+		{
+			unsigned int* const address = fast_find_simd::find_simd_raw(a, a + 1000, (unsigned int)i);
+			assert(address == a + i);
+		}
+	}
+
+	{
+		long long a[1000];
+
+		for (long long i = 0; i < 1000; i++)
+		{
+			a[i] = (long long)i;
+		}
+
+
+		for (long long i = 0; i < 126; i += 2)
+		{
+			long long* const address = fast_find_simd::find_simd_raw(a, a + 1000, (long long)i);
+			assert(address == a + i);
+		}
+	}
+
 	{
 		std::array<char, 126> a;
 		
@@ -35,6 +99,17 @@ int main()
 			a.push_back(i);
 		}
 
+		for (char i = 0; i <= 124; i += 3)
+		{
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (char)i);
+			assert(iter == a.begin() + i);
+		}
+
+		for (char i = 0; i <= 125; i+=2)
+		{
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (char)i);
+			assert(iter == a.begin() + i);
+		}
 
 		for(char i = 0 ; i <= 126 ; i++)
 		{
@@ -63,20 +138,20 @@ int main()
 		}
 
 
-		for(long long i = 500000 ; i < 500050 ; i++)
+		for(long long i = 500000 ; i < 500050 ; i+=2)
 		{
 			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (long long)i);
 			assert(iter == a.begin() + i);
 		}
 
 
-		for (long long i = 0; i < 2000; i++)
+		for (long long i = 0; i < 2000; i+=3)
 		{
 			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (long long)i);
 			assert(iter == a.begin() + i);
 		}
 
-		for (long long i = 10000000 - 500; i < 10000000; i++)
+		for (long long i = 10000000 - 500; i < 10000000; i+=4)
 		{
 			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (long long)i);
 			assert(iter == a.begin() + i);
@@ -146,18 +221,25 @@ int main()
 	{
 		std::vector<short> a;
 		a.reserve(20001);
-		for (short i = 0; i <= 20000; i++)
+		for (short i = 0; i <= 20000; i+=1)
 		{
 			a.push_back(i);
 		}
 
-		for (short i = 20000 - 500; i < 20000; i++)
+
+		for (short i = 0; i < 500; i ++)
 		{
 			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (short)i);
 			assert(iter == a.begin() + i);
 		}
 
-		for (short i = 0; i < 500; i++)
+		for (short i = 20000 - 500; i < 20000; i+=2)
+		{
+			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (short)i);
+			assert(iter == a.begin() + i);
+		}
+
+		for (short i = 0; i < 500; i+=5)
 		{
 			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (short)i);
 			assert(iter == a.begin() + i);
@@ -290,12 +372,12 @@ int main()
 		}
 	
 
-		for (int i = 0; i < 100; i++)
+		for (int i = 0; i < 100; i+=3)
 		{
 			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (int)i);
 			assert(iter == a.begin() + i);
 		}
-		for(int i = 9000 ; i < 9100 ; i++)
+		for(int i = 9000 ; i < 9100 ; i+=5)
 		{
 			auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (int)i);
 			assert(iter == a.begin() + i);
