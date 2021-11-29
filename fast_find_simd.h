@@ -1,4 +1,4 @@
-#ifndef __AVX2__
+#if ( !defined(__AVX2__) && ( !defined(__AVX512BW__) || !defined(__AVX512VL__) ) )
 
 #error "Please enable AVX2 option"
 
@@ -105,11 +105,17 @@ namespace fast_find_simd
             while (compare + 32 <= end)
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi8(*(char*)(&value)); // maybe compiler will cache this variable.
-                const __m256i cmp = _mm256_cmpeq_epi8(*(__m256i*)compare, compareSIMDValue);
+
+#if ( defined(__AVX512BW__) && defined(__AVX512VL__) )
+                const __mmask32 z = _mm256_cmpeq_epi8_mask(*(__m256i*)compare, compareSIMDValue);
+#elif defined(__AVX2__)
+            	const __m256i cmp = _mm256_cmpeq_epi8(*(__m256i*)compare, compareSIMDValue);
                 const int z = _mm256_movemask_epi8(cmp);
+#endif
+
                 if (z)
                 {
-                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
+                    const int first_1_pos = psnip_builtin_ffs(*(int*)&z) - 1;
                     return beginIter + ((uintptr_t)compare + (uintptr_t)first_1_pos - (uintptr_t)begin);
                 }
 
@@ -121,13 +127,18 @@ namespace fast_find_simd
             while (compare + 16 <= end)
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi16(*(short*)(&value));
-                const __m256i cmp = _mm256_cmpeq_epi16(*(__m256i*)compare, compareSIMDValue);
 
+
+#if ( defined(__AVX512BW__) && defined(__AVX512VL__) )
+                const __mmask16 z = _mm256_cmpeq_epi16_mask(*(__m256i*)compare, compareSIMDValue);
+#elif defined(__AVX2__)
+                const __m256i cmp = _mm256_cmpeq_epi16(*(__m256i*)compare, compareSIMDValue);
                 const __m256i IncludeSlotsShifted = _mm256_srli_epi16(cmp, 8);
                 const int z = _mm256_movemask_epi8(IncludeSlotsShifted);
+#endif
                 if (z)
                 {
-                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
+                    const int first_1_pos = psnip_builtin_ffs(*(int*)&z) - 1;
                     return beginIter + (((uintptr_t)compare + (uintptr_t)first_1_pos - (uintptr_t)begin) >> 1);
                 }
 
@@ -139,11 +150,16 @@ namespace fast_find_simd
             while (compare + 8 <= end)
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi32(*(int*)(&value));
+
+#if ( defined(__AVX512BW__) && defined(__AVX512VL__) )
+                const __mmask8 z = _mm256_cmpeq_epi32_mask(*(__m256i*)compare, compareSIMDValue);
+#elif defined(__AVX2__)
                 const __m256i cmp = _mm256_cmpeq_epi32(*(__m256i*)compare, compareSIMDValue);
                 const int z = _mm256_movemask_ps(*(__m256*)(&cmp));
+#endif
                 if (z)
                 {
-                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
+                    const int first_1_pos = psnip_builtin_ffs(*(int*)&z) - 1;
                     return beginIter + (((uintptr_t)compare - (uintptr_t)begin) >> 2) + first_1_pos;
                 }
 
@@ -155,11 +171,16 @@ namespace fast_find_simd
             while (compare + 2 <= end)
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi64x(*(long long*)(&value));
+
+#if ( defined(__AVX512BW__) && defined(__AVX512VL__) )
+                const __mmask8 z = _mm256_cmpeq_epi64_mask(*(__m256i*)compare, compareSIMDValue);
+#elif defined(__AVX2__)
                 const __m256i cmp = _mm256_cmpeq_epi64(*(__m256i*)compare, compareSIMDValue);
                 const int z = _mm256_movemask_pd(*(__m256d*)(&cmp));
+#endif
                 if (z)
                 {
-                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
+                    const int first_1_pos = psnip_builtin_ffs(*(int*)&z) - 1;
                     return beginIter + (((uintptr_t)compare - (uintptr_t)begin) >> 3) + first_1_pos;
                 }
 
