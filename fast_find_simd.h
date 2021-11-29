@@ -31,7 +31,7 @@
 
 namespace fast_find_simd
 {
-    // TODO : remove #include <type_traits>, implement custom is_arithmetic<T>, is_pointer<T>
+    // TODO : remove #include <type_traits>, implement custom is_scalar<T>
 
     namespace details
     {
@@ -181,3 +181,5 @@ namespace fast_find_simd
 
     }    
 }
+
+#undef PSNIP_BUILTIN_H
