@@ -154,7 +154,7 @@ namespace fast_find_simd
         }
         else if FAST_FIND_SIMD_CONSTEXPR(sizeof(iterator_value_type) == 8)
         {
-            while (compare + 2 <= end)
+            while (compare + 4 <= end)
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi64x(*(long long*)(&value));
                 const __m256i cmp = _mm256_cmpeq_epi64(*(__m256i*)compare, compareSIMDValue);
