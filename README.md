@@ -11,7 +11,7 @@ So i thought simd can make std::find faster for some types.
 
 ## Requirement
 
-- iterator's value type should be scalar type
+- iterator's value type should be scalar type and type size of it should be 1 or 2 or 4 or 8
 - iterator should be random access iterator
 - require avx2 option
 - require c++ 11
