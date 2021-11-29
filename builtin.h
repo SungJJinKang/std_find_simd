@@ -75,51 +75,6 @@
 #  include <arm_acle.h>
 #endif
 
- /* For maximum portability include the exact-int module from
-    portable snippets. */
-#if \
-  !defined(psnip_int64_t) || !defined(psnip_uint64_t) || \
-  !defined(psnip_int32_t) || !defined(psnip_uint32_t) || \
-  !defined(psnip_int16_t) || !defined(psnip_uint16_t) || \
-  !defined(psnip_int8_t)  || !defined(psnip_uint8_t)
-#  include <stdint.h>
-#  if !defined(psnip_int64_t)
-#    define psnip_int64_t int64_t
-#  endif
-#  if !defined(psnip_uint64_t)
-#    define psnip_uint64_t uint64_t
-#  endif
-#  if !defined(psnip_int32_t)
-#    define psnip_int32_t int32_t
-#  endif
-#  if !defined(psnip_uint32_t)
-#    define psnip_uint32_t uint32_t
-#  endif
-#  if !defined(psnip_int16_t)
-#    define psnip_int16_t int16_t
-#  endif
-#  if !defined(psnip_uint16_t)
-#    define psnip_uint16_t uint16_t
-#  endif
-#  if !defined(psnip_int8_t)
-#    define psnip_int8_t int8_t
-#  endif
-#  if !defined(psnip_uint8_t)
-#    define psnip_uint8_t uint8_t
-#  endif
-#endif
-
-#if defined(HEDLEY_LIKELY) && defined(HEDLEY_UNLIKELY)
-#  define PSNIP_BUILTIN_LIKELY(expr) HEDLEY_LIKELY(expr)
-#  define PSNIP_BUILTIN_UNLIKELY(expr) HEDLEY_UNLIKELY(expr)
-#elif PSNIP_BUILTIN_GNU_HAS_BUILTIN(__builtin_expect,3,0)
-#  define PSNIP_BUILTIN_LIKELY(expr) __builtin_expect(!!(expr), 1)
-#  define PSNIP_BUILTIN_UNLIKELY(expr) __builtin_expect(!!(expr), 0)
-#else
-#  define PSNIP_BUILTIN_LIKELY(expr) (!!(expr))
-#  define PSNIP_BUILTIN_UNLIKELY(expr) (!!(expr))
-#endif
-
 #if !defined(PSNIP_BUILTIN_STATIC_INLINE)
 #  if defined(__GNUC__)
 #    define PSNIP_BUILTIN__COMPILER_ATTRIBUTES __attribute__((__unused__))
