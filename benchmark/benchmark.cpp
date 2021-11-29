@@ -11,7 +11,7 @@
 #include <benchmark/benchmark.h>
 #include <algorithm>
 
-#include "../std_vector_find_simd.h"
+#include "../fast_find_simd.h"
 
 
 static void Scalar_find_8byte(benchmark::State& state)
@@ -46,7 +46,7 @@ static void Simd_find_8byte(benchmark::State& state)
     {
 		for (long long i = 0; i < 1000; i++)
 		{
-			benchmark::DoNotOptimize(fast_vector_find::find_simd(a, (long long)i));
+			benchmark::DoNotOptimize(fast_find_simd::find_simd(a.begin(), a.end(), (long long)i));
 		}
     }
 
@@ -86,7 +86,7 @@ static void Simd_find_4byte(benchmark::State& state)
 	{
 		for (int i = 0; i < 1000; i++)
 		{
-			benchmark::DoNotOptimize(fast_vector_find::find_simd(a, (int)i));
+			benchmark::DoNotOptimize(fast_find_simd::find_simd(a.begin(), a.end(), (int)i));
 		}
 	}
 
@@ -127,7 +127,7 @@ static void Simd_find_2byte(benchmark::State& state)
 	{
 		for (short i = 0; i < 1000; i++)
 		{
-			benchmark::DoNotOptimize(fast_vector_find::find_simd(a, (short)i));
+			benchmark::DoNotOptimize(fast_find_simd::find_simd(a.begin(), a.end(), (short)i));
 		}
 	}
 
@@ -181,7 +181,7 @@ static void Simd_find_1byte(benchmark::State& state)
 		{
 			for (char i = 0; i < 125; i++)
 			{
-				benchmark::DoNotOptimize(fast_vector_find::find_simd(a, (char)i));
+				benchmark::DoNotOptimize(fast_find_simd::find_simd(a.begin(), a.end(), (char)i));
 			}
 		}
 	}

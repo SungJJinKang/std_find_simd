@@ -1,12 +1,13 @@
 #include <cassert>
 
-#include "../std_vector_find_simd.h"
+#include "../fast_find_simd.h"
 
 #ifndef ALIGNMENT_ALLOCATOR_H
 #define ALIGNMENT_ALLOCATOR_H
 
 #include <stdlib.h>
 #include <malloc.h>
+#include <vector>
 
 template <typename T, std::size_t N = 16>
 class AlignmentAllocator {
@@ -88,7 +89,7 @@ int main()
 
         for (long long i = 500000; i < 500050; i++)
         {
-            auto iter = fast_vector_find::find_simd(a, (long long)i);
+            auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (long long)i);
             assert(iter == a.begin() + i);
         }
     }
@@ -104,7 +105,7 @@ int main()
 
         for (char i = 0; i < 120; i++)
         {
-            auto iter = fast_vector_find::find_simd(a, (char)i);
+            auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (char)i);
             assert(iter == a.begin() + i);
         }
     }
@@ -119,7 +120,7 @@ int main()
 
         for (int i = 80; i < 120; i++)
         {
-            auto iter = fast_vector_find::find_simd(a, (int)i);
+            auto iter = fast_find_simd::find_simd(a.begin(), a.end(), (int)i);
             assert(iter == a.begin() + i);
         }
     }
