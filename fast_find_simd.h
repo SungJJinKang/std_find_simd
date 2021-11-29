@@ -1,6 +1,6 @@
 #if ( !defined(__AVX2__) && ( !defined(__AVX512BW__) || !defined(__AVX512VL__) ) )
 
-#error "Please enable AVX2 option"
+#error "Please enable AVX2 or ( __AVX512BW__ and __AVX512VL__ )option"
 
 #endif
 
@@ -8,7 +8,6 @@
 #include <immintrin.h>
 #include <type_traits>
 #include "builtin.h"
-
 
 #if defined(__GNUC__)  || defined( __clang__)
 #  define FAST_FIND_SIMD_CURRENT_CPP_VERSION __cplusplus
