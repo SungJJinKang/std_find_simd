@@ -43,9 +43,8 @@ namespace fast_vector_find
     };
 
     // RandomAccessIterator is not allowed as function parameter
-	// because msvc prohibit dereference value initialized iterator
+	// because msvc prohibit dereferencing value initialized iterator
     
-    // FUNCTION TEMPLATE find_if_not
     template <typename T, typename Allocator>
     extern typename std::vector<T, Allocator>::iterator find_simd(std::vector<T, Allocator>& vector, const T value)
 	{
