@@ -9,6 +9,7 @@
 #include <iterator>
 #include <immintrin.h>
 #include <type_traits>
+#include <cassert>
 #include "builtin.h"
 
 #if defined(__GNUC__)  || defined( __clang__)
@@ -22,12 +23,6 @@
 #else
 #define FAST_FIND_SIMD_CONSTEXPR
 #endif
-
-
-#define FAST_FIND_SIMD_IS_ALIGNED(POINTER, BYTE_COUNT) \
-    (((uintptr_t)(const void *)(POINTER)) % (BYTE_COUNT) == 0)
-
-
 
 
 namespace fast_find_simd
@@ -90,7 +85,7 @@ namespace fast_find_simd
         const iterator_value_type* const end = &(*(endIter - 1)) + 1; // dereferencing end iterator make assertion
 
 
-        while ((compare != end) && FAST_FIND_SIMD_IS_ALIGNED(compare, 32) == false)
+        while ((compare != end) && ((((uintptr_t)(const void*)(compare)) % 32 == 0) == false))
         {// scalar compare until aligned to 32 byte ( AVX2, 256bit )
             if (*compare == value)
             {
@@ -116,7 +111,7 @@ namespace fast_find_simd
 
                 if (z)
                 {
-                    const int first_1_pos = psnip_builtin_ffs(*(int*)&z) - 1;
+                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
                     return beginIter + ((uintptr_t)compare + (uintptr_t)first_1_pos - (uintptr_t)begin);
                 }
 
@@ -129,7 +124,6 @@ namespace fast_find_simd
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi16(*(short*)(&value));
 
-
 #if ( defined(__AVX512BW__) && defined(__AVX512VL__) )
                 const __mmask16 z = _mm256_cmpeq_epi16_mask(*(__m256i*)compare, compareSIMDValue);
 #elif defined(__AVX2__)
@@ -137,10 +131,15 @@ namespace fast_find_simd
                 const __m256i IncludeSlotsShifted = _mm256_srli_epi16(cmp, 8);
                 const int z = _mm256_movemask_epi8(IncludeSlotsShifted);
 #endif
+
                 if (z)
                 {
-                    const int first_1_pos = psnip_builtin_ffs(*(int*)&z) - 1;
+                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
+#if ( defined(__AVX512BW__) && defined(__AVX512VL__) )
+                    return beginIter + (((uintptr_t)compare - (uintptr_t)begin) >> 1) + first_1_pos;
+#elif defined(__AVX2__)
                     return beginIter + (((uintptr_t)compare + (uintptr_t)first_1_pos - (uintptr_t)begin) >> 1);
+#endif
                 }
 
                 compare += 16;
@@ -158,9 +157,10 @@ namespace fast_find_simd
                 const __m256i cmp = _mm256_cmpeq_epi32(*(__m256i*)compare, compareSIMDValue);
                 const int z = _mm256_movemask_ps(*(__m256*)(&cmp));
 #endif
+
                 if (z)
                 {
-                    const int first_1_pos = psnip_builtin_ffs(*(int*)&z) - 1;
+                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
                     return beginIter + (((uintptr_t)compare - (uintptr_t)begin) >> 2) + first_1_pos;
                 }
 
@@ -179,9 +179,10 @@ namespace fast_find_simd
                 const __m256i cmp = _mm256_cmpeq_epi64(*(__m256i*)compare, compareSIMDValue);
                 const int z = _mm256_movemask_pd(*(__m256d*)(&cmp));
 #endif
+
                 if (z)
                 {
-                    const int first_1_pos = psnip_builtin_ffs(*(int*)&z) - 1;
+                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
                     return beginIter + (((uintptr_t)compare - (uintptr_t)begin) >> 3) + first_1_pos;
                 }
 
@@ -201,7 +202,159 @@ namespace fast_find_simd
 
         return endIter;
 
-    }    
+    }
+
+
+    /// <summary>
+    /// find value from begin to end(excluded)
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="begin"></param>
+    /// <param name="end"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    template <typename T>
+    extern T* find_simd_raw(T* const begin, T* const end, T value)
+    {
+        static_assert(std::is_scalar<T>::value == true, "unsupported type ( value type should be scalar type )");
+
+        static_assert(
+            (sizeof(T) == 1) ||
+            (sizeof(T) == 2) ||
+            (sizeof(T) == 4) ||
+            (sizeof(T) == 8),
+            "unsupported type ( value type size should be 1 or 2 or 4 or 8 )"
+            );
+
+        assert(begin <= end);
+
+        T* compare = begin;
+
+
+        while ((compare != end) && ((((uintptr_t)(const void*)(compare)) % (32) == 0) == false))
+        {// scalar compare until aligned to 32 byte ( AVX2, 256bit )
+            if (*compare == value)
+            {
+                return compare;
+            }
+            compare++;
+        }
+
+        // now address in compare variable is aligned to 32 byte
+
+        if FAST_FIND_SIMD_CONSTEXPR(sizeof(T) == 1)
+        {
+            while (compare + 32 <= end)
+            {
+                const __m256i compareSIMDValue = _mm256_set1_epi8(*(char*)(&value)); // maybe compiler will cache this variable.
+
+#if ( defined(__AVX512BW__) && defined(__AVX512VL__) )
+                const __mmask32 z = _mm256_cmpeq_epi8_mask(*(__m256i*)compare, compareSIMDValue);
+#elif defined(__AVX2__)
+                const __m256i cmp = _mm256_cmpeq_epi8(*(__m256i*)compare, compareSIMDValue);
+                const int z = _mm256_movemask_epi8(cmp);
+#endif
+
+                if (z)
+                {
+                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
+                    return compare + first_1_pos;
+                }
+
+                compare += 32;
+            }
+        }
+        else if FAST_FIND_SIMD_CONSTEXPR(sizeof(T) == 2)
+        {
+            while (compare + 16 <= end)
+            {
+                const __m256i compareSIMDValue = _mm256_set1_epi16(*(short*)(&value));
+
+#if ( defined(__AVX512BW__) && defined(__AVX512VL__) )
+                const __mmask16 z = _mm256_cmpeq_epi16_mask(*(__m256i*)compare, compareSIMDValue);
+#elif defined(__AVX2__)
+                const __m256i cmp = _mm256_cmpeq_epi16(*(__m256i*)compare, compareSIMDValue);
+                const __m256i IncludeSlotsShifted = _mm256_srli_epi16(cmp, 8);
+                const int z = _mm256_movemask_epi8(IncludeSlotsShifted);
+#endif
+
+                if (z)
+                {
+                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
+#if ( defined(__AVX512BW__) && defined(__AVX512VL__) )
+                    return compare + first_1_pos;
+#elif defined(__AVX2__)
+                    return compare + (first_1_pos >> 1);
+#endif
+                }
+
+                compare += 16;
+            }
+        }
+        else if FAST_FIND_SIMD_CONSTEXPR(sizeof(T) == 4)
+        {
+            while (compare + 8 <= end)
+            {
+                const __m256i compareSIMDValue = _mm256_set1_epi32(*(int*)(&value));
+
+#if ( defined(__AVX512BW__) && defined(__AVX512VL__) )
+                const __mmask8 z = _mm256_cmpeq_epi32_mask(*(__m256i*)compare, compareSIMDValue);
+#elif defined(__AVX2__)
+                const __m256i cmp = _mm256_cmpeq_epi32(*(__m256i*)compare, compareSIMDValue);
+                const int z = _mm256_movemask_ps(*(__m256*)(&cmp));
+#endif
+
+                if (z)
+                {
+                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
+                    return compare + first_1_pos;
+                }
+
+                compare += 8;
+            }
+        }
+        else if FAST_FIND_SIMD_CONSTEXPR(sizeof(T) == 8)
+        {
+            while (compare + 4 <= end)
+            {
+                const __m256i compareSIMDValue = _mm256_set1_epi64x(*(long long*)(&value));
+
+#if ( defined(__AVX512BW__) && defined(__AVX512VL__) )
+                const __mmask8 z = _mm256_cmpeq_epi64_mask(*(__m256i*)compare, compareSIMDValue);
+#elif defined(__AVX2__)
+                const __m256i cmp = _mm256_cmpeq_epi64(*(__m256i*)compare, compareSIMDValue);
+                const int z = _mm256_movemask_pd(*(__m256d*)(&cmp));
+#endif
+
+                if (z)
+                {
+                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
+                    return compare + first_1_pos;
+                }
+
+                compare += 4;
+            }
+        }
+
+        //scalar compare tails
+        while (compare != end)
+        {
+            if (*compare == value)
+            {
+                return compare;
+            }
+            compare++;
+        }
+
+        return end;
+
+    }
+
+    template <typename T>
+    extern const T* find_simd_raw(const T* const begin, const T* const end, const T value)
+    {
+        return find_simd_raw(const_cast<T*>(begin), const_cast<T*>(end), value);
+    }
 }
 
 #undef PSNIP_BUILTIN_H
