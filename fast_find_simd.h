@@ -68,7 +68,7 @@ namespace fast_find_simd
         {
             assert( (((uintptr_t)alignedCompareAddress) % (32) == 0) == true);
 
-            if FAST_FIND_SIMD_CONSTEXPR(valueSize == 1) // maybe compiler can resolve this at compile time
+            if (valueSize == 1) // maybe compiler can resolve this at compile time
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi8(*(char*)(findValue)); // maybe compiler will cache this variable.
                 const __m256i cmp = _mm256_cmpeq_epi8(*(__m256i*)alignedCompareAddress, compareSIMDValue);
@@ -79,7 +79,7 @@ namespace fast_find_simd
                     return (uintptr_t)alignedCompareAddress + (uintptr_t)first_1_pos;
                 }
             }
-            else if FAST_FIND_SIMD_CONSTEXPR(valueSize == 2)
+            else if (valueSize == 2)
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi16(*(short*)(findValue));
                 const __m256i cmp = _mm256_cmpeq_epi16(*(__m256i*)alignedCompareAddress, compareSIMDValue);
@@ -92,7 +92,7 @@ namespace fast_find_simd
                     return (uintptr_t)alignedCompareAddress + ( ((uintptr_t)first_1_pos >> 1) << 1 );
                 }
             }
-            else if FAST_FIND_SIMD_CONSTEXPR(valueSize == 4)
+            else if (valueSize == 4)
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi32(*(int*)(findValue));
                 const __m256i cmp = _mm256_cmpeq_epi32(*(__m256i*)alignedCompareAddress, compareSIMDValue);
@@ -103,7 +103,7 @@ namespace fast_find_simd
                     return (uintptr_t)alignedCompareAddress + ((uintptr_t)first_1_pos << 2);
                 }
             }
-            else if FAST_FIND_SIMD_CONSTEXPR(valueSize == 8)
+            else if (valueSize == 8)
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi64x(*(long long*)(findValue));
                 const __m256i cmp = _mm256_cmpeq_epi64(*(__m256i*)alignedCompareAddress, compareSIMDValue);
