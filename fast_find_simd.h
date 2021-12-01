@@ -58,6 +58,65 @@ namespace fast_find_simd
             (sizeof(iterator_value_type) == 1 || sizeof(iterator_value_type) == 2 || sizeof(iterator_value_type) == 4 || sizeof(iterator_value_type) == 8)
     	;
     };
+
+    namespace algo
+    {
+
+        uintptr_t find_simd(const void* alignedCompareAddress, const size_t valueSize, const void* const findValue)
+        {
+            assert( (((uintptr_t)alignedCompareAddress) % (32) == 0) == true);
+
+            if FAST_FIND_SIMD_CONSTEXPR(valueSize == 1)
+            {
+                const __m256i compareSIMDValue = _mm256_set1_epi8(*(char*)(findValue)); // maybe compiler will cache this variable.
+                const __m256i cmp = _mm256_cmpeq_epi8(*(__m256i*)alignedCompareAddress, compareSIMDValue);
+                const int z = _mm256_movemask_epi8(cmp);
+                if (z)
+                {
+                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
+                    return (uintptr_t)alignedCompareAddress + (uintptr_t)first_1_pos;
+                }
+            }
+            else if FAST_FIND_SIMD_CONSTEXPR(valueSize == 2)
+            {
+                const __m256i compareSIMDValue = _mm256_set1_epi16(*(short*)(findValue));
+                const __m256i cmp = _mm256_cmpeq_epi16(*(__m256i*)alignedCompareAddress, compareSIMDValue);
+
+                const __m256i inSlotShifted = _mm256_srli_epi16(cmp, 8);
+                const int z = _mm256_movemask_epi8(inSlotShifted);
+                if (z)
+                {
+                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
+                    return (uintptr_t)alignedCompareAddress + ((uintptr_t)first_1_pos >> 1) * 2;
+                }
+            }
+            else if FAST_FIND_SIMD_CONSTEXPR(valueSize == 4)
+            {
+                const __m256i compareSIMDValue = _mm256_set1_epi32(*(int*)(findValue));
+                const __m256i cmp = _mm256_cmpeq_epi32(*(__m256i*)alignedCompareAddress, compareSIMDValue);
+                const int z = _mm256_movemask_ps(*(__m256*)(&cmp));
+                if (z)
+                {
+                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
+                    return (uintptr_t)alignedCompareAddress + (uintptr_t)first_1_pos * 4;
+                }
+            }
+            else if FAST_FIND_SIMD_CONSTEXPR(valueSize == 8)
+            {
+                const __m256i compareSIMDValue = _mm256_set1_epi64x(*(long long*)(findValue));
+                const __m256i cmp = _mm256_cmpeq_epi64(*(__m256i*)alignedCompareAddress, compareSIMDValue);
+                const int z = _mm256_movemask_pd(*(__m256d*)(&cmp));
+                if (z)
+                {
+                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
+                    return (uintptr_t)alignedCompareAddress + (uintptr_t)first_1_pos * 8;
+                }
+            }
+
+            return 0;
+        }
+       
+    }
     
 
     template <typename LEGACY_RANDOM_ITERATOR>
@@ -97,73 +156,16 @@ namespace fast_find_simd
 
         // now address in compare variable is aligned to 32 byte
 
-        if FAST_FIND_SIMD_CONSTEXPR(sizeof(iterator_value_type) == 1)
+        while (compare + (32 / sizeof(iterator_value_type)) <= end)
         {
-            while (compare + 32 <= end)
+            const uintptr_t resultAddress = algo::find_simd(compare, sizeof(iterator_value_type), &value);
+            if (resultAddress != 0)
             {
-                const __m256i compareSIMDValue = _mm256_set1_epi8(*(char*)(&value)); // maybe compiler will cache this variable.
-                const __m256i cmp = _mm256_cmpeq_epi8(*(__m256i*)compare, compareSIMDValue);
-                const int z = _mm256_movemask_epi8(cmp);
-                if (z)
-                {
-                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
-                    return beginIter + ((uintptr_t)compare + (uintptr_t)first_1_pos - (uintptr_t)begin);
-                }
-
-                compare += 32;
+                return beginIter + (resultAddress - (uintptr_t)begin) / sizeof(iterator_value_type);
             }
+            compare += (32 / sizeof(iterator_value_type));
         }
-        else if FAST_FIND_SIMD_CONSTEXPR(sizeof(iterator_value_type) == 2)
-        {
-            while (compare + 16 <= end)
-            {
-                const __m256i compareSIMDValue = _mm256_set1_epi16(*(short*)(&value));
-                const __m256i cmp = _mm256_cmpeq_epi16(*(__m256i*)compare, compareSIMDValue);
-
-                const __m256i inSlotShifted = _mm256_srli_epi16(cmp, 8);
-                const int z = _mm256_movemask_epi8(inSlotShifted);
-                if (z)
-                {
-                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
-                    return beginIter + (((uintptr_t)compare + (uintptr_t)first_1_pos - (uintptr_t)begin) >> 1);
-                }
-
-                compare += 16;
-            }
-        }
-        else if FAST_FIND_SIMD_CONSTEXPR(sizeof(iterator_value_type) == 4)
-        {
-            while (compare + 8 <= end)
-            {
-                const __m256i compareSIMDValue = _mm256_set1_epi32(*(int*)(&value));
-                const __m256i cmp = _mm256_cmpeq_epi32(*(__m256i*)compare, compareSIMDValue);
-                const int z = _mm256_movemask_ps(*(__m256*)(&cmp));
-                if (z)
-                {
-                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
-                    return beginIter + ((((uintptr_t)compare - (uintptr_t)begin) >> 2) + first_1_pos);
-                }
-
-                compare += 8;
-            }
-        }
-        else if FAST_FIND_SIMD_CONSTEXPR(sizeof(iterator_value_type) == 8)
-        {
-            while (compare + 4 <= end)
-            {
-                const __m256i compareSIMDValue = _mm256_set1_epi64x(*(long long*)(&value));
-                const __m256i cmp = _mm256_cmpeq_epi64(*(__m256i*)compare, compareSIMDValue);
-                const int z = _mm256_movemask_pd(*(__m256d*)(&cmp));
-                if (z)
-                {
-                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
-                    return beginIter + ((((uintptr_t)compare - (uintptr_t)begin) >> 3) + first_1_pos);
-                }
-
-                compare += 4;
-            }
-        }
-
+        
         //scalar compare tails
         while (compare != end)
         {
@@ -217,71 +219,14 @@ namespace fast_find_simd
 
         // now address in compare variable is aligned to 32 byte
 
-        if FAST_FIND_SIMD_CONSTEXPR(sizeof(T) == 1)
+        while (compare + (32 / sizeof(T)) <= end)
         {
-            while (compare + 32 <= end)
+            const uintptr_t resultAddress = algo::find_simd(compare, sizeof(T), &value);
+            if (resultAddress != 0)
             {
-                const __m256i compareSIMDValue = _mm256_set1_epi8(*(char*)(&value)); // maybe compiler will cache this variable.
-                const __m256i cmp = _mm256_cmpeq_epi8(*(__m256i*)compare, compareSIMDValue);
-                const int z = _mm256_movemask_epi8(cmp);
-                if (z)
-                {
-                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
-                    return compare + first_1_pos;
-                }
-
-                compare += 32;
+                return (T*)resultAddress;
             }
-        }
-        else if FAST_FIND_SIMD_CONSTEXPR(sizeof(T) == 2)
-        {
-            while (compare + 16 <= end)
-            {
-                const __m256i compareSIMDValue = _mm256_set1_epi16(*(short*)(&value));
-                const __m256i cmp = _mm256_cmpeq_epi16(*(__m256i*)compare, compareSIMDValue);
-
-                const __m256i inSlotShifted = _mm256_srli_epi16(cmp, 8);
-                const int z = _mm256_movemask_epi8(inSlotShifted);
-                if (z)
-                {
-                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
-                    return compare + (first_1_pos >> 1);
-                }
-
-                compare += 16;
-            }
-        }
-        else if FAST_FIND_SIMD_CONSTEXPR(sizeof(T) == 4)
-        {
-            while (compare + 8 <= end)
-            {
-                const __m256i compareSIMDValue = _mm256_set1_epi32(*(int*)(&value));
-                const __m256i cmp = _mm256_cmpeq_epi32(*(__m256i*)compare, compareSIMDValue);
-                const int z = _mm256_movemask_ps(*(__m256*)(&cmp));
-                if (z)
-                {
-                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
-                    return compare + first_1_pos;
-                }
-
-                compare += 8;
-            }
-        }
-        else if FAST_FIND_SIMD_CONSTEXPR(sizeof(T) == 8)
-        {
-            while (compare + 4 <= end)
-            {
-                const __m256i compareSIMDValue = _mm256_set1_epi64x(*(long long*)(&value));
-                const __m256i cmp = _mm256_cmpeq_epi64(*(__m256i*)compare, compareSIMDValue);
-                const int z = _mm256_movemask_pd(*(__m256d*)(&cmp));
-                if (z)
-                {
-                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
-                    return compare + first_1_pos;
-                }
-
-                compare += 4;
-            }
+            compare += (32 / sizeof(T));
         }
 
         //scalar compare tails
