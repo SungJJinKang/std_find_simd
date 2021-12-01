@@ -4,20 +4,25 @@
 #include <vector>
 #include <array>
 
+#if defined(__GNUC__)  || defined( __clang__)
+#define PACK( __Declaration__ ) __Declaration__ __attribute__((__packed__))
+#elif _MSC_VER
+#define PACK( __Declaration__ ) __pragma( pack(push, 1) ) __Declaration__ __pragma( pack(pop))
+#endif
+
 int main()
 {
 
 	static_assert(fast_find_simd::is_iteratype_type_find_simd_capable<std::vector<char>::iterator>::value == true, "fail is_iteratype_type_find_simd_capable");
 	static_assert(fast_find_simd::is_iteratype_type_find_simd_capable<std::vector<int>::iterator>::value == true, "fail is_iteratype_type_find_simd_capable");
-
-	#pragma pack(push, 1)
-	struct PackedStruct
+	
+	PACK(struct PackedStruct
 	{
 		alignas(4) char padding;
 		char a[32];
 		alignas(4) char padding3[3];
 		int b[32];
-	};
+	});
 
 	{
 		PackedStruct p;

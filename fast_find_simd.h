@@ -14,8 +14,10 @@
 
 
 #if defined(__GNUC__)  || defined( __clang__)
+#  define FAST_FIND_SIMD_FORCE_INLINE inline __attribute__ ((always_inline))
 #  define FAST_FIND_SIMD_CURRENT_CPP_VERSION __cplusplus
 #elif defined(_MSC_VER)
+#  define FAST_FIND_SIMD_FORCE_INLINE __forceinline
 #  define FAST_FIND_SIMD_CURRENT_CPP_VERSION _MSVC_LANG 
 #endif
 
@@ -62,11 +64,11 @@ namespace fast_find_simd
     namespace algo
     {
 
-        uintptr_t find_simd(const void* alignedCompareAddress, const size_t valueSize, const void* const findValue)
+        FAST_FIND_SIMD_FORCE_INLINE uintptr_t find_simd(const void* alignedCompareAddress, const size_t valueSize, const void* const findValue)
         {
             assert( (((uintptr_t)alignedCompareAddress) % (32) == 0) == true);
 
-            if FAST_FIND_SIMD_CONSTEXPR(valueSize == 1)
+            if FAST_FIND_SIMD_CONSTEXPR(valueSize == 1) // maybe compiler can resolve this at compile time
             {
                 const __m256i compareSIMDValue = _mm256_set1_epi8(*(char*)(findValue)); // maybe compiler will cache this variable.
                 const __m256i cmp = _mm256_cmpeq_epi8(*(__m256i*)alignedCompareAddress, compareSIMDValue);
@@ -87,7 +89,7 @@ namespace fast_find_simd
                 if (z)
                 {
                     const int first_1_pos = psnip_builtin_ffs(z) - 1;
-                    return (uintptr_t)alignedCompareAddress + ((uintptr_t)first_1_pos >> 1) * 2;
+                    return (uintptr_t)alignedCompareAddress + ( ((uintptr_t)first_1_pos >> 1) << 1 );
                 }
             }
             else if FAST_FIND_SIMD_CONSTEXPR(valueSize == 4)
@@ -98,7 +100,7 @@ namespace fast_find_simd
                 if (z)
                 {
                     const int first_1_pos = psnip_builtin_ffs(z) - 1;
-                    return (uintptr_t)alignedCompareAddress + (uintptr_t)first_1_pos * 4;
+                    return (uintptr_t)alignedCompareAddress + ((uintptr_t)first_1_pos << 2);
                 }
             }
             else if FAST_FIND_SIMD_CONSTEXPR(valueSize == 8)
@@ -109,7 +111,7 @@ namespace fast_find_simd
                 if (z)
                 {
                     const int first_1_pos = psnip_builtin_ffs(z) - 1;
-                    return (uintptr_t)alignedCompareAddress + (uintptr_t)first_1_pos * 8;
+                    return (uintptr_t)alignedCompareAddress + ((uintptr_t)first_1_pos << 3);
                 }
             }
 
@@ -143,8 +145,7 @@ namespace fast_find_simd
 
         const iterator_value_type* const begin = compare;
         const iterator_value_type* const end = &(*(endIter - 1)) + 1; // dereferencing end iterator make assertion
-
-
+        
         while ((compare != end) && ((((uintptr_t)(const void*)(compare)) % (32) == 0) == false))
         {// scalar compare until aligned to 32 byte ( AVX2, 256bit )
             if (*compare == value)
