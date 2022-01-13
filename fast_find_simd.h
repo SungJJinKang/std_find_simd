@@ -251,4 +251,3 @@ namespace fast_find_simd
     }
 }
 
-#undef PSNIP_BUILTIN_H
