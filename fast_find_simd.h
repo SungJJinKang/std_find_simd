@@ -37,7 +37,7 @@ namespace fast_find_simd
         template<typename T, typename = void>
         struct is_iterator
         {
-            static constexpr bool value = false;
+            static FAST_FIND_SIMD_CONSTEXPR bool value = false;
         };
 
         template<typename T>
