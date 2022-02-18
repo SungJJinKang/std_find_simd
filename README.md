@@ -34,7 +34,6 @@ for (short i = 0; i < 1000; i++)
 ## Performance Comparison
 tested on release mode, msvc, x64, windows               
 ![20211128031529](https://user-images.githubusercontent.com/33873804/143701373-1c8aafbe-6131-4538-9d60-5432b84cd87c.png)
-<img width="500" alt="20211129191512" src="https://user-images.githubusercontent.com/33873804/143849444-50a29bc7-39b1-4dc6-8a7d-4c0f37bd78fc.png">
 
 
 ## To develop

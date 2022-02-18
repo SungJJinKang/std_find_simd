@@ -37,7 +37,7 @@ namespace fast_find_simd
         template<typename T, typename = void>
         struct is_iterator
         {
-            static constexpr bool value = false;
+            static FAST_FIND_SIMD_CONSTEXPR bool value = false;
         };
 
         template<typename T>
@@ -141,7 +141,7 @@ namespace fast_find_simd
             );
 
 
-        iterator_value_type* compare = &(*beginIter);
+        const iterator_value_type* compare = &(*beginIter);
 
         const iterator_value_type* const begin = compare;
         const iterator_value_type* const end = &(*(endIter - 1)) + 1; // dereferencing end iterator make assertion
@@ -251,4 +251,3 @@ namespace fast_find_simd
     }
 }
 
-#undef PSNIP_BUILTIN_H

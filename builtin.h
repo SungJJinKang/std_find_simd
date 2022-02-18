@@ -13,8 +13,8 @@
  * public domain (and a fantastic web site).
  */
 
-#if !defined(PSNIP_BUILTIN_H)
-#define PSNIP_BUILTIN_H
+#if !defined(FAST_FIND_SIMD_PSNIP_BUILTIN_H)
+#define FAST_FIND_SIMD_PSNIP_BUILTIN_H
 
 #if defined(HEDLEY_GCC_HAS_BUILTIN)
 #  define PSNIP_BUILTIN_GNU_HAS_BUILTIN(builtin,major,minor) HEDLEY_GCC_HAS_BUILTIN(builtin,major,minor,0)
