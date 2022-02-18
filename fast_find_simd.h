@@ -141,7 +141,7 @@ namespace fast_find_simd
             );
 
 
-        iterator_value_type* compare = &(*beginIter);
+        const iterator_value_type* compare = &(*beginIter);
 
         const iterator_value_type* const begin = compare;
         const iterator_value_type* const end = &(*(endIter - 1)) + 1; // dereferencing end iterator make assertion
