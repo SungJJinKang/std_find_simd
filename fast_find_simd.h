@@ -63,66 +63,85 @@ namespace fast_find_simd
 
     namespace algo
     {
-
-        FAST_FIND_SIMD_FORCE_INLINE uintptr_t find_simd(const void* alignedCompareAddress, const size_t valueSize, const void* const findValue)
+        template <const size_t valueSize>
+        FAST_FIND_SIMD_FORCE_INLINE uintptr_t find_simd(const void* alignedCompareAddress, const void* const findValue)
         {
-            assert( (((uintptr_t)alignedCompareAddress) % (32) == 0) == true);
+            static_assert(
+                (valueSize == 1) ||
+                (valueSize == 2) ||
+                (valueSize == 4) ||
+                (valueSize == 8),
+                "unsupported type ( iterator's value type size should be 1 or 2 or 4 or 8 )"
+            );
+            return 0;
+        }
 
-            if (valueSize == 1) // maybe compiler can resolve this at compile time
+        template <>
+        FAST_FIND_SIMD_FORCE_INLINE uintptr_t find_simd<1>(const void* alignedCompareAddress, const void* const findValue)
+        {
+            const __m256i compareSIMDValue = _mm256_set1_epi8(*(char*)(findValue)); // maybe compiler will cache this variable.
+            const __m256i cmp = _mm256_cmpeq_epi8(*(__m256i*)alignedCompareAddress, compareSIMDValue);
+            const int z = _mm256_movemask_epi8(cmp);
+            if (z)
             {
-                const __m256i compareSIMDValue = _mm256_set1_epi8(*(char*)(findValue)); // maybe compiler will cache this variable.
-                const __m256i cmp = _mm256_cmpeq_epi8(*(__m256i*)alignedCompareAddress, compareSIMDValue);
-                const int z = _mm256_movemask_epi8(cmp);
-                if (z)
-                {
-                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
-                    return (uintptr_t)alignedCompareAddress + (uintptr_t)first_1_pos;
-                }
-            }
-            else if (valueSize == 2)
-            {
-                const __m256i compareSIMDValue = _mm256_set1_epi16(*(short*)(findValue));
-                const __m256i cmp = _mm256_cmpeq_epi16(*(__m256i*)alignedCompareAddress, compareSIMDValue);
-
-                const __m256i inSlotShifted = _mm256_srli_epi16(cmp, 8);
-                const int z = _mm256_movemask_epi8(inSlotShifted);
-                if (z)
-                {
-                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
-                    return (uintptr_t)alignedCompareAddress + ( ((uintptr_t)first_1_pos >> 1) << 1 );
-                }
-            }
-            else if (valueSize == 4)
-            {
-                const __m256i compareSIMDValue = _mm256_set1_epi32(*(int*)(findValue));
-                const __m256i cmp = _mm256_cmpeq_epi32(*(__m256i*)alignedCompareAddress, compareSIMDValue);
-                const int z = _mm256_movemask_ps(*(__m256*)(&cmp));
-                if (z)
-                {
-                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
-                    return (uintptr_t)alignedCompareAddress + ((uintptr_t)first_1_pos << 2);
-                }
-            }
-            else if (valueSize == 8)
-            {
-                const __m256i compareSIMDValue = _mm256_set1_epi64x(*(long long*)(findValue));
-                const __m256i cmp = _mm256_cmpeq_epi64(*(__m256i*)alignedCompareAddress, compareSIMDValue);
-                const int z = _mm256_movemask_pd(*(__m256d*)(&cmp));
-                if (z)
-                {
-                    const int first_1_pos = psnip_builtin_ffs(z) - 1;
-                    return (uintptr_t)alignedCompareAddress + ((uintptr_t)first_1_pos << 3);
-                }
+                const int first_1_pos = psnip_builtin_ffs(z) - 1;
+                return (uintptr_t)alignedCompareAddress + (uintptr_t)first_1_pos;
             }
 
             return 0;
         }
-       
+
+        template <>
+        FAST_FIND_SIMD_FORCE_INLINE uintptr_t find_simd<2>(const void* alignedCompareAddress, const void* const findValue)
+        {
+            const __m256i compareSIMDValue = _mm256_set1_epi16(*(short*)(findValue));
+            const __m256i cmp = _mm256_cmpeq_epi16(*(__m256i*)alignedCompareAddress, compareSIMDValue);
+
+            const __m256i inSlotShifted = _mm256_srli_epi16(cmp, 8);
+            const int z = _mm256_movemask_epi8(inSlotShifted);
+            if (z)
+            {
+                const int first_1_pos = psnip_builtin_ffs(z) - 1;
+                return (uintptr_t)alignedCompareAddress + (((uintptr_t)first_1_pos >> 1) << 1);
+            }
+
+            return 0;
+        }
+
+        template <>
+        FAST_FIND_SIMD_FORCE_INLINE uintptr_t find_simd<4>(const void* alignedCompareAddress, const void* const findValue)
+        {
+            const __m256i compareSIMDValue = _mm256_set1_epi32(*(int*)(findValue));
+            const __m256i cmp = _mm256_cmpeq_epi32(*(__m256i*)alignedCompareAddress, compareSIMDValue);
+            const int z = _mm256_movemask_ps(*(__m256*)(&cmp));
+            if (z)
+            {
+                const int first_1_pos = psnip_builtin_ffs(z) - 1;
+                return (uintptr_t)alignedCompareAddress + ((uintptr_t)first_1_pos << 2);
+            }
+
+            return 0;
+        }
+
+        template <>
+        FAST_FIND_SIMD_FORCE_INLINE uintptr_t find_simd<8>(const void* alignedCompareAddress, const void* const findValue)
+        {
+            const __m256i compareSIMDValue = _mm256_set1_epi64x(*(long long*)(findValue));
+            const __m256i cmp = _mm256_cmpeq_epi64(*(__m256i*)alignedCompareAddress, compareSIMDValue);
+            const int z = _mm256_movemask_pd(*(__m256d*)(&cmp));
+            if (z)
+            {
+                const int first_1_pos = psnip_builtin_ffs(z) - 1;
+                return (uintptr_t)alignedCompareAddress + ((uintptr_t)first_1_pos << 3);
+            }
+
+            return 0;
+        }       
     }
     
 
     template <typename LEGACY_RANDOM_ITERATOR>
-    extern LEGACY_RANDOM_ITERATOR find_simd(LEGACY_RANDOM_ITERATOR beginIter, LEGACY_RANDOM_ITERATOR endIter, const typename std::add_const<typename std::iterator_traits<LEGACY_RANDOM_ITERATOR>::value_type>::type value)
+    LEGACY_RANDOM_ITERATOR find_simd(LEGACY_RANDOM_ITERATOR beginIter, LEGACY_RANDOM_ITERATOR endIter, const typename std::add_const<typename std::iterator_traits<LEGACY_RANDOM_ITERATOR>::value_type>::type value)
     {
         static_assert(details::is_iterator<LEGACY_RANDOM_ITERATOR>::value == true, "Please pass iterator type");
 
@@ -159,7 +178,7 @@ namespace fast_find_simd
 
         while (compare + (32 / sizeof(iterator_value_type)) <= end)
         {
-            const uintptr_t resultAddress = algo::find_simd(compare, sizeof(iterator_value_type), &value);
+            const uintptr_t resultAddress = algo::find_simd<sizeof(iterator_value_type)>(compare, &value);
             if (resultAddress != 0)
             {
                 return beginIter + (resultAddress - (uintptr_t)begin) / sizeof(iterator_value_type);
@@ -192,7 +211,7 @@ namespace fast_find_simd
     /// <param name="value"></param>
     /// <returns></returns>
     template <typename T>
-    extern T* find_simd_raw(T* const begin, T* const end, T value)
+    T* find_simd_raw(T* const begin, T* const end, T value)
     {
         static_assert(std::is_scalar<T>::value == true, "unsupported type ( value type should be scalar type )");
 
@@ -222,7 +241,7 @@ namespace fast_find_simd
 
         while (compare + (32 / sizeof(T)) <= end)
         {
-            const uintptr_t resultAddress = algo::find_simd(compare, sizeof(T), &value);
+            const uintptr_t resultAddress = algo::find_simd<sizeof(T)>(compare, &value);
             if (resultAddress != 0)
             {
                 return (T*)resultAddress;
@@ -245,7 +264,7 @@ namespace fast_find_simd
     }
 
     template <typename T>
-    extern const T* find_simd_raw(const T* const begin, const T* const end, const T value)
+    const T* find_simd_raw(const T* const begin, const T* const end, const T value)
     {
         return find_simd_raw(const_cast<T*>(begin), const_cast<T*>(end), value);
     }
